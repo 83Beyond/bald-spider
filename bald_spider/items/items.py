@@ -2,6 +2,7 @@ from collections.abc import MutableMapping
 from copy import deepcopy
 from pprint import pformat
 
+from bald_spider.exceptions import ItemInitError, ItemAttributeError
 from bald_spider.items import Field, ItemMeta
 
 
@@ -10,8 +11,13 @@ class Item(MutableMapping, metaclass=ItemMeta):
 
     FIELDS: dict
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         self._values = {}
+        if args:
+            raise ItemInitError(f"{self.__class__.__name__}: position args is not supported, use keyword args.")
+        if kwargs:
+            for k, v in kwargs.items():
+                self[k] = v
 
     def __setitem__(self, key, value):
         if key in self.FIELDS:
@@ -39,7 +45,7 @@ class Item(MutableMapping, metaclass=ItemMeta):
     def __getattribute__(self, item):
         field = super().__getattribute__("FIELDS")
         if item in field:
-            raise AttributeError(f"use item[{item!r}] to get field value.")
+            raise ItemAttributeError(f"use item[{item!r}] to get field value.")
         else:
             return super().__getattribute__(item)
 
@@ -66,7 +72,7 @@ if __name__ == '__main__':
         title = Field()
     class TestItem2(Item):
         name = Field()
-    test_item = TestItem()
+    test_item = TestItem(1)
     test_item2 = TestItem2()
     # test_item.a = 1
     # print(test_item2.name)
