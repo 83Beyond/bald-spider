@@ -7,6 +7,12 @@ class Spider:
         if not hasattr(self, "start_urls"):
             self.start_urls = []
 
+    @classmethod
+    def create_instance(cls, crawler):
+        o = cls()
+        o.crawler = crawler
+        return o
+
     def start_requests(self):
         if self.start_urls:
             for url in self.start_urls:
