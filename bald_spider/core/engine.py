@@ -2,13 +2,14 @@ import asyncio
 from typing import Optional, Generator, Callable
 from inspect import iscoroutine
 
-from bald_spider import Request
+from bald_spider import Request, Item
 from bald_spider.core.downloader import Downloader
 from bald_spider.core.scheduler import Scheduler
 from bald_spider.exceptions import OutputError
 from bald_spider.spider import Spider
 from bald_spider.utils.spider import transform
 from bald_spider.task_manager import TaskManager
+from bald_spider.core.processor import Processor
 
 
 class Engine:
@@ -18,6 +19,7 @@ class Engine:
         self.settings = crawler.settings
         self.downloader: Optional[Downloader] = None
         self.scheduler: Optional[Scheduler] = None
+        self.processor: Optional[Processor] = None
         self.spider: Optional[Spider] = None
         self.start_requests: Optional[Generator] = None  # Optional 可以是 None
         self.task_manager: TaskManager = TaskManager(self.settings.getint("CONCURRENCY"))
@@ -26,10 +28,11 @@ class Engine:
     async def start_spider(self, spider):
         self.running = True
         self.spider = spider
-        self.downloader = Downloader()
         self.scheduler = Scheduler()
         if hasattr(self.scheduler, "open"):
             self.scheduler.open()
+        self.downloader = Downloader()
+        self.processor = Processor(self.crawler)
         self.start_requests = iter(spider.start_requests())
         await self._open_spider()
 
@@ -96,13 +99,12 @@ class Engine:
 
     async def _handle_spider_output(self, outputs):
         async for spider_output in outputs:
-            if isinstance(spider_output, Request):
-                await self.enqueue_request(spider_output)
-            # todo 需要判断是不是数据，暂定为 Item
+            if isinstance(spider_output, (Request, Item)):
+                await self.processor.enqueue(spider_output)
             else:
                 raise OutputError(f"{type(self.spider)} must return `Request` or `Item`")
 
     async def _exit(self):
-        if self.scheduler.idle() and self.downloader.idle() and self.task_manager.all_done():
+        if self.scheduler.idle() and self.downloader.idle() and self.task_manager.all_done() and self.processor.idle():
             return True
         return False
