@@ -23,3 +23,6 @@ class Spider:
 
     def parse(self, response):
         raise NotImplementedError
+
+    def __str__(self):
+        return self.__class__.__name__
