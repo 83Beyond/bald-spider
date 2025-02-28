@@ -13,7 +13,9 @@ class Request:
             method: str = "GET",
             cookies: Optional[Dict] = None,
             proxy: Optional[Dict] = None,
-            body=""
+            body="",
+            encoding="utf-8",
+            meta: Optional[Dict] = None
     ):
         self.url = url
         self.headers = headers
@@ -23,6 +25,15 @@ class Request:
         self.cookies = cookies
         self.proxy = proxy
         self.body = body
+        self.encoding = encoding
+        self._meta = meta if meta is not None else {}
+
+    def __str__(self):
+        return f"{self.url} {self.method}"
 
     def __lt__(self, other):
         return self.priority < other.priority
+
+    @property
+    def meta(self):
+        return self._meta

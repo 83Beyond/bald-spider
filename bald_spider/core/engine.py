@@ -10,11 +10,13 @@ from bald_spider.spider import Spider
 from bald_spider.utils.spider import transform
 from bald_spider.task_manager import TaskManager
 from bald_spider.core.processor import Processor
+from bald_spider.utils.log import get_logger
 
 
 class Engine:
 
     def __init__(self, crawler):
+        self.logger = get_logger(self.__class__.__name__)
         self.crawler = crawler
         self.settings = crawler.settings
         self.downloader: Optional[Downloader] = None
@@ -27,6 +29,7 @@ class Engine:
 
     async def start_spider(self, spider):
         self.running = True
+        self.logger.info(f"bald_spider started. (project name: {self.settings.get('PROJECT_NAME')})")
         self.spider = spider
         self.scheduler = Scheduler()
         if hasattr(self.scheduler, "open"):
@@ -49,8 +52,7 @@ class Engine:
                 await self._crawl(request)
             else:
                 try:
-                    start_request = next(self.start_requests)  # noqa
-
+                    start_request = next(self.start_requests)
                 except StopIteration:
                     self.start_requests = None
                 except Exception as exc:
@@ -60,6 +62,8 @@ class Engine:
                     if not await self._exit():
                         continue
                     self.running = False
+                    if self.start_requests is not None:
+                        self.logger.error(f"Error during start_requests: {exc}")
                 else:
                     # 入队
                     await self.enqueue_request(start_request)

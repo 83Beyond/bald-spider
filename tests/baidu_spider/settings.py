@@ -1,2 +1,5 @@
 PROJECT_NAME = "baidu_spider"
+
 CONCURRENCY = 32
+
+LOG_LEVEL = "DEBUG"

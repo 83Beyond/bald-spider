@@ -1,7 +1,6 @@
 import random
 import asyncio
-
-import requests
+# aiohttp httpx 插件化：插拔性，即插即用。
 
 
 class Downloader:
