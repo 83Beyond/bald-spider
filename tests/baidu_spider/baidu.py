@@ -10,6 +10,15 @@ class BaiduSpider(Spider):
         print("parse", response)
         for i in range(10):
             url = "https://www.baidu.com"
-            request = Request(url=url)
+            request = Request(url=url, callback=self.parse_page)
             yield request
 
+    def parse_page(self, response):
+        print("parse_page", response)
+        for i in range(10):
+            url = "https://www.baidu.com"
+            request = Request(url=url, callback=self.parse_detail)
+            yield request
+
+    def parse_detail(self, response):
+        print("parse_detail", response)

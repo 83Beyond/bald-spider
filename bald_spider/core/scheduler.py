@@ -18,3 +18,9 @@ class Scheduler:
 
     async def enqueue_request(self, request):
         await self.request_queue.put(request)
+
+    def idle(self) -> bool:
+        return len(self) == 0
+
+    def __len__(self):
+        return self.request_queue.qsize()
