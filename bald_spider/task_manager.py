@@ -5,7 +5,7 @@ from asyncio import Task, Future, Semaphore
 
 class TaskManager:
 
-    def __init__(self, total_concurrency=4):
+    def __init__(self, total_concurrency=8):
         self.current_task: Final[Set] = set()
         self.semaphore: Semaphore = Semaphore(total_concurrency)
 

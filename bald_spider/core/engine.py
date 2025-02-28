@@ -66,8 +66,6 @@ class Engine:
             # 处理 outputs
             if outputs:
                 await self._handle_spider_output(outputs)
-        # 不 await，创建的 task 还没来得及向队列产生请求，导致主线程死循环拿不到请求从而退出
-        # asyncio.create_task(crawl_task())
         await self.task_manager.semaphore.acquire()
         self.task_manager.create_task(crawl_task())
 
