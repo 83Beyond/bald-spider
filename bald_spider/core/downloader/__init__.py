@@ -63,7 +63,7 @@ class DownloaderBase(metaclass=DownloaderMeta):
     async def fetch(self, request) -> Optional[Response]:
         async with self._active(request):
             # 请求预处理
-            response = await self.download(request)
+            response = await self.middleware.download(request)
             # 响应预处理
             return response
 

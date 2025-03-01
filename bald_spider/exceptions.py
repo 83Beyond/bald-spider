@@ -26,3 +26,11 @@ class DecodeError(Exception):
 
 class MiddlewareInitError(Exception):
     pass
+
+
+class InvalidOutput(Exception):
+    pass
+
+
+class RequestMethodError(Exception):
+    pass
