@@ -27,8 +27,9 @@ class Engine:
         self.start_requests: Optional[Generator] = None  # Optional 可以是 None
         self.task_manager: TaskManager = TaskManager(self.settings.getint("CONCURRENCY"))
         self.running = False
+        self.normal = True
 
-    def _get_downloader(self):
+    def _get_downloader_cls(self):
         downloader_cls = load_class(self.settings.get("DOWNLOADER"))
         if not issubclass(downloader_cls, DownloaderBase):
             raise TypeError(
@@ -41,10 +42,10 @@ class Engine:
         self.running = True
         self.logger.info(f"bald_spider started. (project name: {self.settings.get('PROJECT_NAME')})")
         self.spider = spider
-        self.scheduler = Scheduler()
+        self.scheduler = Scheduler(self.crawler)
         if hasattr(self.scheduler, "open"):
             self.scheduler.open()
-        downloader_cls = self._get_downloader()
+        downloader_cls = self._get_downloader_cls()
         self.downloader = downloader_cls.create_instance(self.crawler)
         if hasattr(self.downloader, "open"):
             self.downloader.open()
@@ -55,6 +56,7 @@ class Engine:
     async def _open_spider(self):
         crawling = asyncio.create_task(self.crawl())
         # 这里可以做其他的事情
+        asyncio.create_task(self.scheduler.interval_log(self.settings.getint("INTERVAL")))
         await crawling
 
     async def crawl(self):
@@ -131,4 +133,7 @@ class Engine:
         return False
 
     async def close_spider(self):
+        await asyncio.gather(*self.task_manager.current_task)  # 强停，aio 版本下载器需要等任务下载完，因为还需要 session
         await self.downloader.close()
+        if self.normal:
+            await self.crawler.close()
