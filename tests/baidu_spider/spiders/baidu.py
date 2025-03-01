@@ -5,6 +5,7 @@ from items import BaiduItem  # type: ignore
 class BaiduSpider(Spider):
 
     start_urls = ["http://www.baidu.com", "http://www.baidu.com"]
+    headers = {"User-Agent": ""}
 
     def parse(self, response):
         for i in range(2):

@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from abc import abstractmethod, ABCMeta
 
 from bald_spider import Response, Request
+from bald_spider.middleware.middleware_manager import MiddlewareManager
 from bald_spider.utils.log import get_logger
 
 
@@ -44,6 +45,7 @@ class DownloaderBase(metaclass=DownloaderMeta):
     def __init__(self, crawler):
         self.crawler = crawler
         self._active = ActiveRequestManager()
+        self.middleware: Optional[MiddlewareManager] = None
 
         self.logger = get_logger(name=self.__class__.__name__, log_level=crawler.settings.get("LOG_LEVEL"))
 
@@ -56,10 +58,13 @@ class DownloaderBase(metaclass=DownloaderMeta):
             f"{self.crawler.spider} <downloader class: {type(self).__name__}> "
             f"<concurrency: {self.crawler.settings.getint('CONCURRENCY')}>"
         )
+        self.middleware = MiddlewareManager.create_instance(self.crawler)
 
     async def fetch(self, request) -> Optional[Response]:
         async with self._active(request):
+            # 请求预处理
             response = await self.download(request)
+            # 响应预处理
             return response
 
     @abstractmethod
