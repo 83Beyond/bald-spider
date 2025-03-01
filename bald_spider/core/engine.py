@@ -5,6 +5,7 @@ from inspect import iscoroutine
 from bald_spider import Request, Item
 from bald_spider.core.downloader import DownloaderBase
 from bald_spider.core.scheduler import Scheduler
+from bald_spider.event import spider_opened, spider_error
 from bald_spider.exceptions import OutputError
 from bald_spider.spider import Spider
 from bald_spider.utils.spider import transform
@@ -54,6 +55,7 @@ class Engine:
         await self._open_spider()
 
     async def _open_spider(self):
+        asyncio.create_task(self.crawler.subscriber.notify(spider_opened))
         crawling = asyncio.create_task(self.crawl())
         # 这里可以做其他的事情
         asyncio.create_task(self.scheduler.interval_log(self.settings.getint("INTERVAL")))
@@ -124,6 +126,11 @@ class Engine:
         async for spider_output in outputs:
             if isinstance(spider_output, (Request, Item)):
                 await self.processor.enqueue(spider_output)
+            elif isinstance(spider_output, Exception):
+                asyncio.create_task(
+                    self.crawler.subscriber.notify(spider_error, spider_output, self.spider)
+                )
+                raise spider_output
             else:
                 raise OutputError(f"{type(self.spider)} must return `Request` or `Item`")
 
