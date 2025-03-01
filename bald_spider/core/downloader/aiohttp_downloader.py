@@ -49,9 +49,7 @@ class AioDownloader(DownloaderBase):
                     body = await response.content.read()
         except Exception as exc:
             self.logger.error(f"Error request: {exc}")
-            return None
-        else:
-            self.crawler.stats.inc_value("response_received_count")
+            raise exc
         return self.structure_response(request, response, body)
 
     @staticmethod
