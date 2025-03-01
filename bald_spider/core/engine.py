@@ -3,7 +3,7 @@ from typing import Optional, Generator, Callable
 from inspect import iscoroutine
 
 from bald_spider import Request, Item
-from bald_spider.core.downloader import Downloader
+from bald_spider.core.downloader import DownloaderBase
 from bald_spider.core.scheduler import Scheduler
 from bald_spider.exceptions import OutputError
 from bald_spider.spider import Spider
@@ -11,6 +11,7 @@ from bald_spider.utils.spider import transform
 from bald_spider.task_manager import TaskManager
 from bald_spider.core.processor import Processor
 from bald_spider.utils.log import get_logger
+from bald_spider.utils.project import load_class
 
 
 class Engine:
@@ -19,13 +20,22 @@ class Engine:
         self.logger = get_logger(self.__class__.__name__)
         self.crawler = crawler
         self.settings = crawler.settings
-        self.downloader: Optional[Downloader] = None
+        self.downloader: Optional[DownloaderBase] = None
         self.scheduler: Optional[Scheduler] = None
         self.processor: Optional[Processor] = None
         self.spider: Optional[Spider] = None
         self.start_requests: Optional[Generator] = None  # Optional 可以是 None
         self.task_manager: TaskManager = TaskManager(self.settings.getint("CONCURRENCY"))
         self.running = False
+
+    def _get_downloader(self):
+        downloader_cls = load_class(self.settings.get("DOWNLOADER"))
+        if not issubclass(downloader_cls, DownloaderBase):
+            raise TypeError(
+                f"The downloader class ({self.settings.get('DOWNLOADER')}) "
+                f"doesn't fully implemented required interface"
+            )
+        return downloader_cls
 
     async def start_spider(self, spider):
         self.running = True
@@ -34,7 +44,8 @@ class Engine:
         self.scheduler = Scheduler()
         if hasattr(self.scheduler, "open"):
             self.scheduler.open()
-        self.downloader = Downloader(self.crawler)
+        downloader_cls = self._get_downloader()
+        self.downloader = downloader_cls.create_instance(self.crawler)
         if hasattr(self.downloader, "open"):
             self.downloader.open()
         self.processor = Processor(self.crawler)
@@ -92,6 +103,8 @@ class Engine:
                     return transform(_outputs)
 
         _response = await self.downloader.fetch(request)
+        if _response is None:
+            return None
         outputs = await _success(_response)  # 生成器，能获取到的前提是 fetch 是成功的
         return outputs
 

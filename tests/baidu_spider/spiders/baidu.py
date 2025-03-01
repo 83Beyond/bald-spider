@@ -6,8 +6,6 @@ class BaiduSpider(Spider):
 
     start_urls = ["https://www.baidu.com", "https://www.baidu.com"]
 
-    custom_settings = {"CONCURRENCY": 32}
-
     def parse(self, response):
         for i in range(2):
             url = "https://www.baidu.com"
