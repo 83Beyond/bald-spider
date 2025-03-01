@@ -50,7 +50,6 @@ class Crawler:
         self.stats.close_spider(self.spider, reason)
 
 
-
 class CrawlerProcess:
 
     def __init__(self, settings=None):
