@@ -15,17 +15,19 @@ class Request:
             proxy: Optional[Dict] = None,
             body: Optional[Dict] = None,
             encoding="utf-8",
-            meta: Optional[Dict] = None
+            meta: Optional[Dict] = None,
+            dont_filter: bool = False
     ):
         self.url = url
         self.headers = headers if headers else {}
         self.callback = callback
         self.priority = priority
-        self.method = method
+        self.method = method.lower()
         self.cookies = cookies
         self.proxy = proxy
         self.body = body
         self.encoding = encoding
+        self.dont_filter = dont_filter
         self._meta = meta if meta is not None else {}
 
     def __str__(self):
