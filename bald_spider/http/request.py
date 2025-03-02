@@ -13,7 +13,7 @@ class Request:
             method: str = "GET",
             cookies: Optional[Dict] = None,
             proxy: Optional[Dict] = None,
-            body="",
+            body: Optional[Dict] = None,
             encoding="utf-8",
             meta: Optional[Dict] = None
     ):
