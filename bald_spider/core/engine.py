@@ -39,9 +39,14 @@ class Engine:
             )
         return downloader_cls
 
-    async def start_spider(self, spider):
+    def engine_start(self):
         self.running = True
-        self.logger.info(f"bald_spider started. (project name: {self.settings.get('PROJECT_NAME')})")
+        self.logger.info(
+            f"bald_spider(version: {self.settings.get('VERSION')}) started. "
+            f"(project name: {self.settings.get('PROJECT_NAME')})"
+        )
+
+    async def start_spider(self, spider):
         self.spider = spider
         self.scheduler = Scheduler(self.crawler)
         if hasattr(self.scheduler, "open"):
@@ -58,7 +63,6 @@ class Engine:
         asyncio.create_task(self.crawler.subscriber.notify(spider_opened))
         crawling = asyncio.create_task(self.crawl())
         # 这里可以做其他的事情
-        asyncio.create_task(self.scheduler.interval_log(self.settings.getint("INTERVAL")))
         await crawling
 
     async def crawl(self):

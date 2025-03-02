@@ -1,6 +1,9 @@
 from collections import defaultdict
 from typing import Dict, Set, Callable, Coroutine
 import asyncio
+from inspect import iscoroutinefunction
+
+from bald_spider.exceptions import ReceiverTypeError
 
 
 class Subscriber:
@@ -14,6 +17,8 @@ class Subscriber:
             *,
             event: str
     ) -> None:
+        if not iscoroutinefunction(receiver):
+            raise ReceiverTypeError(f"{receiver.__qualname__} must be a coroutine function.")
         self._subscriber[event].add(receiver)
 
     def unsubscribe(

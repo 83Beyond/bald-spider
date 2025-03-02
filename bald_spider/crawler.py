@@ -9,9 +9,9 @@ from bald_spider.spider import Spider
 from bald_spider.settings.settings_manager import SettingsManager
 from bald_spider.stats_collector import StatsCollector
 from bald_spider.subscriber import Subscriber
+from bald_spider.extension import ExtensionManager
 from bald_spider.utils.project import merge_settings
 from bald_spider.utils.log import get_logger
-from bald_spider.utils.date import now
 
 logger = get_logger(__name__)
 
@@ -24,6 +24,7 @@ class Crawler:
         self.engine: Optional[Engine] = None
         self.stats: Optional[StatsCollector] = None
         self.subscriber: Optional[Subscriber] = None
+        self.extension: Optional[ExtensionManager] = None
         self.settings: SettingsManager = settings.copy()
 
     async def crawl(self):
@@ -31,18 +32,24 @@ class Crawler:
         self.spider = self._create_spider()
         self.engine = self._create_engine()
         self.stats = self._create_stats()
+        self.extension = self._create_extension()
         await self.engine.start_spider(self.spider)
 
-    def _create_subscriber(self):
+    @staticmethod
+    def _create_subscriber():
         return Subscriber()
+
+    def _create_extension(self):
+        extension = ExtensionManager.create_instance(self)
+        return extension
 
     def _create_engine(self) -> Engine:
         engine = Engine(self)
+        engine.engine_start()
         return engine
 
     def _create_stats(self) -> StatsCollector:
         stats = StatsCollector(self)
-        stats["start_time"] = now()
         return stats
 
     def _create_spider(self) -> Spider:
@@ -56,7 +63,7 @@ class Crawler:
         merge_settings(spider, self.settings)
 
     async def close(self, reason="finished"):
-        asyncio.create_task(self.subscriber.notify(spider_closed))
+        await asyncio.create_task(self.subscriber.notify(spider_closed))
         self.stats.close_spider(self.spider, reason)
 
 

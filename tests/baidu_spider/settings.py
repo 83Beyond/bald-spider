@@ -21,6 +21,11 @@ MIDDLEWARES = [
     # downloader side
 ]
 
+EXTENSIONS = [
+    "bald_spider.extension.log_interval.LogInterval",
+    "bald_spider.extension.log_stats.LogStats",
+]
+
 DOWNLOAD_DELAY = 2
 
 USER_AGENT = ""

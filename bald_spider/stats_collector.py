@@ -1,7 +1,6 @@
 from pprint import pformat
 
 from bald_spider.utils.log import get_logger
-from bald_spider.utils.date import date_delta, now
 
 
 class StatsCollector:
@@ -28,14 +27,15 @@ class StatsCollector:
         self._stats.clear()
 
     def close_spider(self, spider, reason):
-        self._stats["end_time"] = now()
         self._stats["reason"] = reason
-        self._stats["cost_time(s)"] = date_delta(self._stats["start_time"], self._stats["end_time"])
         if self._dump:
             self.logger.info(f"{spider} stats: \n" + pformat(self._stats))
 
     def __getattr__(self, name):
         return self._stats[name]
+
+    def __getitem__(self, item):
+        return self._stats[item]
 
     def __setitem__(self, key, value):
         self._stats[key] = value
