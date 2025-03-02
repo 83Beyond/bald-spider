@@ -41,3 +41,16 @@ DEFAULT_HEADERS = {
 ALLOWED_CODES = [404]
 
 DB_NAME = "bald_spider"
+
+# filter
+FILTER_DEBUG = True
+# FILTER_CLS = "bald_spider.duplicate_filter.aioredis_filter.AioRedisFilter"
+FILTER_CLS = "bald_spider.duplicate_filter.memory_filter.MemoryFilter"
+# FILTER_CLS = "bald_spider.duplicate_filter.aioredis_filter.AioRedisFilter"
+
+# redis_filter
+REDIS_URL = "redis://localhost/0"  # redis://[[username]:[password]]@host:port/db
+DECODE_RESPONSES = True
+REDIS_KEY = "request_fingerprint"
+SAVE_FP = False
+# REQUEST_DIR = "."  # 没有 REQUEST_DIR 就是基于内存的过滤器，不写文件

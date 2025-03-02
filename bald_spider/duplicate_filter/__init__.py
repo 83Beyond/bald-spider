@@ -26,6 +26,7 @@ class BaseFilter(ABC):
         if fp in self:
             return True
         self.add(fp)
+        return False
 
     @abstractmethod
     def add(self, fp: str) -> None:

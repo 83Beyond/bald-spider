@@ -5,7 +5,7 @@ from inspect import iscoroutine
 from bald_spider import Request, Item
 from bald_spider.core.downloader import DownloaderBase
 from bald_spider.core.scheduler import Scheduler
-from bald_spider.event import spider_opened, spider_error
+from bald_spider.event import spider_opened, spider_error, request_scheduled
 from bald_spider.exceptions import OutputError
 from bald_spider.spider import Spider
 from bald_spider.utils.spider import transform
@@ -48,7 +48,7 @@ class Engine:
 
     async def start_spider(self, spider):
         self.spider = spider
-        self.scheduler = Scheduler(self.crawler)
+        self.scheduler = Scheduler.create_instance(self.crawler)
         if hasattr(self.scheduler, "open"):
             self.scheduler.open()
         downloader_cls = self._get_downloader_cls()
@@ -122,8 +122,10 @@ class Engine:
         await self._schedule_request(request)
 
     async def _schedule_request(self, request):
-        # todo 去重
-        await self.scheduler.enqueue_request(request)
+        if await self.scheduler.enqueue_request(request):
+            asyncio.create_task(
+                self.crawler.subscriber.notify(request_scheduled, request, self.crawler.spider)
+            )
 
     async def _get_next_request(self):
         return await self.scheduler.next_request()
@@ -147,6 +149,7 @@ class Engine:
 
     async def close_spider(self):
         await asyncio.gather(*self.task_manager.current_task)  # 强停，aio 版本下载器需要等任务下载完，因为还需要 session
+        await self.scheduler.closed()
         await self.downloader.close()
         if self.normal:
             await self.crawler.close()
