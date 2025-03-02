@@ -1,4 +1,4 @@
-import asyncio
+from asyncio import create_task
 from pprint import pformat
 from typing import List, Dict, Callable, Optional
 from types import MethodType
@@ -6,7 +6,7 @@ from collections import defaultdict
 
 from bald_spider import Request, Response
 from bald_spider.event import ignore_request, response_received
-from bald_spider.exceptions import MiddlewareInitError, InvalidOutput, RequestMethodError, IgnoreRequest
+from bald_spider.exceptions import MiddlewareInitError, InvalidOutput, RequestMethodError, IgnoreRequest, NotConfigured
 from bald_spider.utils.log import get_logger
 from bald_spider.utils.project import load_class
 from bald_spider.middleware import BaseMiddleware
@@ -45,12 +45,7 @@ class MiddlewareManager:
             try:
                 response = await common_call(method, request, response, self.crawler.spider)
             except IgnoreRequest as exc:
-                asyncio.create_task(self.crawler.subscriber.notify(ignore_request, exc, request, self.crawler.spider))
-                self.logger.info(f"{request} ignored.")
-                self._stats.inc_value("request_ignore_count")
-                reason = exc.msg
-                if reason:
-                    self._stats.inc_value(f"request_ignore_count/{reason}")
+                create_task(self.crawler.subscriber.notify(ignore_request, exc, request, self.crawler.spider))
                 return None
             else:
                 if isinstance(response, Request):
@@ -84,18 +79,13 @@ class MiddlewareManager:
         except KeyError:
             raise RequestMethodError(f"{request.method.lower()} is not supported.")
         except IgnoreRequest as exc:
-            asyncio.create_task(self.crawler.subscriber.notify(ignore_request, exc, request, self.crawler.spider))
-            self.logger.info(f"{request} ignored.")
-            self._stats.inc_value(f"request_ignore_count")
-            reason = exc.msg
-            if reason:
-                self._stats.inc_value(f"request_ignore_count/{reason}")
+            create_task(self.crawler.subscriber.notify(ignore_request, exc, request, self.crawler.spider))
             response = await self._process_exception(request, exc)
         except Exception as exc:
             self._stats.inc_value(f"download_error/{exc.__class__.__name__}")
             response = await self._process_exception(request, exc)
         else:
-            asyncio.create_task(self.crawler.subscriber.notify(response_received, response, self.crawler.spider))
+            create_task(self.crawler.subscriber.notify(response_received, response, self.crawler.spider))
             self.crawler.stats.inc_value("response_received_count")
 
         if isinstance(response, Response):
@@ -128,9 +118,12 @@ class MiddlewareManager:
             raise MiddlewareInitError(
                 f"Middleware init failed, must inherit from `BaseMiddleware` or have `create_instance` method."
             )
-        instance = middleware_cls.create_instance(self.crawler)
-        self.middlewares.append(instance)
-        return True
+        try:
+            instance = middleware_cls.create_instance(self.crawler)
+            self.middlewares.append(instance)
+            return True
+        except NotConfigured:
+            return False
 
     @classmethod
     def create_instance(cls, *args, **kwargs):

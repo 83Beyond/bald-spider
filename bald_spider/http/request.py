@@ -18,7 +18,7 @@ class Request:
             meta: Optional[Dict] = None
     ):
         self.url = url
-        self.headers = headers
+        self.headers = headers if headers else {}
         self.callback = callback
         self.priority = priority
         self.method = method

@@ -1,3 +1,4 @@
+import json
 from copy import deepcopy
 from importlib import import_module
 from collections.abc import MutableMapping
@@ -44,6 +45,12 @@ class SettingsManager(MutableMapping):
         if isinstance(value, str):
             value = value.split(",")
         return list(value)
+
+    def getdict(self, name, default=None):  # noqa
+        value = self.get(name, default or {})
+        if isinstance(value, str):
+            value = json.loads(value)
+        return dict(value)
 
     def __contains__(self, item):
         return item in self.attributes
