@@ -17,8 +17,9 @@ class BaiduSpider(Spider):
 
     def parse(self, response):
         for i in range(2):
-            url = "http://www.baidu.com"
-            request = Request(url=url, callback=self.parse_page)
+            url = "http://www.httpbin.org/404"
+            meta = {"dont_retry": True}
+            request = Request(url=url, callback=self.parse_page, meta=meta)
             yield request
 
     def parse_page(self, response):
