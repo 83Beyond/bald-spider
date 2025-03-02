@@ -14,3 +14,5 @@ request_scheduled = "request_scheduled"
 response_received = "response_received"
 # item_successful arguments: item, spider
 item_successful = "item_successful"
+# item_discard arguments: item, exception, spider
+item_discard = "item_discard"
