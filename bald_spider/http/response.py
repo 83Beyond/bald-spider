@@ -41,7 +41,7 @@ class Response:
                 _encoding = _encoding_re.search(_encoding_string)
                 if _encoding:
                     _encoding = _encoding.group(1)
-                    self._text_cache = self.body.decode(self.encoding)
+                    self._text_cache = self.body.decode(_encoding)
                 else:
                     raise DecodeError(f"{self.request} {self.request.encoding} error.")
             except UnicodeDecodeError as exc:
