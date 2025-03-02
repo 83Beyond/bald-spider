@@ -16,14 +16,19 @@ MIDDLEWARES = [
     "bald_spider.middleware.response_code.ResponseCodeStats",
     "bald_spider.middleware.request_ignore.RequestIgnore",
 
-    "baidu_spider.middleware.TestMiddleware",
-    "baidu_spider.middleware.TestMiddleware2",
+    # "baidu_spider.middleware.TestMiddleware",
+    # "baidu_spider.middleware.TestMiddleware2",
     # downloader side
 ]
 
 EXTENSIONS = [
     "bald_spider.extension.log_interval.LogInterval",
     "bald_spider.extension.log_stats.LogStats",
+]
+
+PIPELINES = [
+    # "baidu_spider.pipeline.TestPipeline",
+    # "bald_spider.pipeline.debug_pipeline.DebugPipeline",
 ]
 
 DOWNLOAD_DELAY = 2
@@ -34,3 +39,5 @@ DEFAULT_HEADERS = {
 }
 
 ALLOWED_CODES = [404]
+
+DB_NAME = "bald_spider"

@@ -1,13 +1,19 @@
-from typing import Union
+from typing import Union, Optional
 from asyncio import Queue
 
 from bald_spider import Request, Item
+from bald_spider.pipeline.pipeline_manager import PipelineManager
+
 
 class Processor:
 
     def __init__(self, crawler):
         self.crawler = crawler
         self.queue: Queue = Queue()
+        self.pipelines: Optional[PipelineManager] = None
+
+    def open(self):
+        self.pipelines = PipelineManager.create_instance(self.crawler)
 
     async def process(self):
         while not self.idle():
@@ -19,8 +25,7 @@ class Processor:
                 await self._process_item(result)
 
     async def _process_item(self, item):
-        self.crawler.stats.inc_value("item_successful_count")
-        print(item)
+        await self.pipelines.process_item(item)
 
     async def enqueue(self, output: Union[Request, Item]):
         await self.queue.put(output)

@@ -53,3 +53,14 @@ class ExtensionInitError(Exception):
 
 class ReceiverTypeError(Exception):
     pass
+
+
+class PipelineInitError(Exception):
+    pass
+
+
+class ItemDiscard(Exception):
+
+    def __init__(self, msg):
+        self.msg = msg
+        super(ItemDiscard, self).__init__(msg)

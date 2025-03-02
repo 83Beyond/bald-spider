@@ -12,6 +12,8 @@ class LogStats:
         o = cls(crawler.stats)
         crawler.subscriber.subscribe(o.spider_opened, event=event.spider_opened)
         crawler.subscriber.subscribe(o.spider_closed, event=event.spider_closed)
+        crawler.subscriber.subscribe(o.item_successful, event=event.item_successful)
+        crawler.subscriber.subscribe(o.item_discard, event=event.item_discard)
         crawler.subscriber.subscribe(o.request_scheduled, event=event.request_scheduled)
         crawler.subscriber.subscribe(o.response_received, event=event.response_received)
         return o
@@ -28,3 +30,12 @@ class LogStats:
 
     async def response_received(self, _response, _spider):
         self._stats.inc_value("response_received_count")
+
+    async def item_successful(self, _item, _spider):
+        self._stats.inc_value("item_successful_count")
+
+    async def item_discard(self, _item, exception, _spider):
+        self._stats.inc_value("item_discard_count")
+        reason = exception.msg
+        if reason:
+            self._stats.inc_value(f"item_discard/{reason}")
