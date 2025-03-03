@@ -19,13 +19,13 @@ class BaiduSpider(Spider):
         for i in range(2):
             url = "http://www.baidu.com"
             meta = {"dont_retry": True}
-            request = Request(url=url, callback=self.parse_page, meta=meta)
+            request = Request(url=url, callback=self.parse_page, meta=meta, dont_filter=True)
             yield request
 
     def parse_page(self, response):
         for i in range(2):
             url = "http://www.baidu.com"
-            request = Request(url=url, callback=self.parse_detail)
+            request = Request(url=url, callback=self.parse_detail, dont_filter=True)
             yield request
 
     def parse_detail(self, response):

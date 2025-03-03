@@ -21,7 +21,7 @@ class Request:
         self.url = url
         self.headers = headers if headers else {}
         self.callback = callback
-        self.priority = priority
+        self.priority = -priority
         self.method = method.lower()
         self.cookies = cookies
         self.proxy = proxy
