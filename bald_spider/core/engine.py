@@ -110,7 +110,7 @@ class Engine:
                 if iscoroutine(_outputs):
                     await _outputs
                 else:
-                    return transform(_outputs)
+                    return transform(_outputs, _response)
 
         _response = await self.downloader.fetch(request)
         if _response is None:

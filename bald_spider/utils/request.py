@@ -13,7 +13,7 @@ def to_bytes(text, encoding="utf-8") -> bytes:
         return text.encode(encoding)
     if isinstance(text, dict):
         return json.dumps(text, sort_keys=True).encode(encoding)
-
+    raise TypeError(f"`text` must be str, bytes or dict, get {type(text)}.")
 
 def request_fingerprint(
         request: Request,
@@ -34,3 +34,8 @@ def request_fingerprint(
     fingerprint = fp.hexdigest()
     return fingerprint
 
+
+def set_request(request: Request, priority: int):
+    request.meta["depth"] = request.meta.setdefault("depth", 0) + 1
+    if priority:
+        request.priority -= request.meta["depth"] * priority

@@ -15,6 +15,7 @@ from httpx import RemoteProtocolError, ConnectError, ReadTimeout
 from anyio import EndOfStream
 from httpcore import ReadError
 
+from bald_spider import Request
 from bald_spider.stats_collector import StatsCollector
 from bald_spider.utils.log import get_logger
 
@@ -36,19 +37,21 @@ _retry_exceptions = [
 class Retry:
 
     def __init__(
-            self,
-            *,
-            retry_http_codes: List,
-            ignore_http_codes: List,
-            max_retry_times: int,
-            retry_exceptions: List,
-            stats: StatsCollector
+        self,
+        *,
+        retry_http_codes: List,
+        ignore_http_codes: List,
+        max_retry_times: int,
+        retry_exceptions: List,
+        stats: StatsCollector,
+        retry_priority: int
     ):
         self.retry_http_codes = retry_http_codes
         self.ignore_http_codes = ignore_http_codes
         self.max_retry_times = max_retry_times
         self.retry_exceptions = tuple(retry_exceptions + _retry_exceptions)
         self.stats = stats
+        self.retry_priority = retry_priority
         self.logger = get_logger(self.__class__.__name__)
 
     @classmethod
@@ -58,7 +61,8 @@ class Retry:
             ignore_http_codes=crawler.settings.getlist("IGNORE_HTTP_CODES"),
             max_retry_times=crawler.settings.getint("MAX_RETRY_TIMES"),
             retry_exceptions=crawler.settings.getlist("RETRY_EXCEPTIONS"),
-            stats=crawler.stats
+            stats=crawler.stats,
+            retry_priority=crawler.settings.getint("RETRY_PRIORITY")
         )
         return o
 
@@ -80,7 +84,7 @@ class Retry:
         ):
             return self._retry(request, type(exc).__name__, spider)
 
-    def _retry(self, request, reason, spider):
+    def _retry(self, request: Request, reason, spider):
         # todo 重新发起的请求，优先级应该怎么定
         retry_times = request.meta.get("retry_times", 0)
         if retry_times < self.max_retry_times:
@@ -88,6 +92,7 @@ class Retry:
             self.logger.info(f"{spider} {request} {reason} retrying {retry_times} time...")
             request.meta["retry_times"] = retry_times
             request.dont_filter = True
+            request.priority = request.priority + self.retry_priority
             self.stats.inc_value("retry_count")
             return request
         else:
