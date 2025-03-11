@@ -3,8 +3,7 @@ from copy import deepcopy
 from pprint import pformat
 
 from bald_spider.exceptions import ItemInitError, ItemAttributeError
-from bald_spider.items import Field, ItemMeta
-
+from bald_spider.items import ItemMeta
 
 
 class Item(MutableMapping, metaclass=ItemMeta):
@@ -65,16 +64,3 @@ class Item(MutableMapping, metaclass=ItemMeta):
 
     def copy(self):
         return deepcopy(self)
-
-if __name__ == '__main__':
-    class TestItem(Item):
-        url = Field()
-        title = Field()
-    class TestItem2(Item):
-        name = Field()
-    test_item = TestItem(1)
-    test_item2 = TestItem2()
-    # test_item.a = 1
-    # print(test_item2.name)
-    print(test_item2.aaaaaa)
-    # test_item["aaa"] = 1

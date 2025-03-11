@@ -3,9 +3,10 @@ from bald_spider.event import spider_error
 from bald_spider.spider import Spider
 from items import BaiduItem  # type: ignore
 
+
 class BaiduSpider(Spider):
 
-    start_urls = ["http://www.baidu.com", "http://www.baidu.com"]
+    start_urls = ["http://www.baidu.com"]
     headers = {"User-Agent": ""}
 
     @classmethod

@@ -40,6 +40,7 @@ class DownloaderMeta(ABCMeta):
         )
         return is_subclass
 
+
 class DownloaderBase(metaclass=DownloaderMeta):
 
     def __init__(self, crawler):

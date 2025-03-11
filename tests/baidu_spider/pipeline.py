@@ -1,6 +1,8 @@
 import random
-
+import os
+import json
 from motor.motor_asyncio import AsyncIOMotorClient
+import aiofiles
 
 from bald_spider.event import spider_closed
 from bald_spider.exceptions import ItemDiscard
@@ -48,3 +50,37 @@ class MongoPipeline:
     async def process_item(self, item, spider):
         await self.col.insert_one(item.to_dict())
         return item
+
+
+class LayPipeline:
+
+    def __init__(self, category):
+        self._data = []
+        self.logger = get_logger(self.__class__.__name__)
+        self.category = category
+
+    @classmethod
+    def create_instance(cls, crawler):
+        o = cls(crawler.spider.category)
+        crawler.subscriber.subscribe(o.spider_closed, event=spider_closed)
+        return o
+
+    def process_item(self, item, spider):
+        data = {
+            "title": item["title"],
+            "answers": item["answers"],
+            "detail_link": item["detail_link"],
+        }
+        self._data.append(data)
+        return item
+
+    async def spider_closed(self):
+        """异步写入数据到 JSON 文件"""
+        output_path = f"./zhaofa_data/{self.category}.json"
+
+        async with aiofiles.open(output_path, 'w', encoding='utf-8') as file:
+            json_data = json.dumps(self._data, ensure_ascii=False, indent=4)
+            await file.write(json_data)  # 异步写入文件
+        # output_path = f"./zhaofa_data/{self.category}.json"
+        # with open(output_path, 'w', encoding='utf-8') as file:
+        #     json.dump(self._data, file, ensure_ascii=False, indent=4)

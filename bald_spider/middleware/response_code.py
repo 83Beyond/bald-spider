@@ -15,7 +15,7 @@ class ResponseCodeStats:
         )
         return o
 
-    def process_response(self, request, response, spider):
+    def process_response(self, _request, response, _spider):
         self.stats.inc_value(f"stats_code/count/{response.status}")
         self.logger.debug(f"Got response from <{response.status} {response.url}>")
         return response

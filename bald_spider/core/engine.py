@@ -94,7 +94,6 @@ class Engine:
             await self.close_spider()
 
     async def _crawl(self, request):
-        # todo 实现并发
         async def crawl_task():
             outputs = await self._fetch(request)
             # 处理 outputs

@@ -32,6 +32,7 @@ class LogInterval:
     async def spider_closed(self):
         if self.task:
             self.task.cancel()
+
     async def interval_log(self):
         while True:
             last_item_count = self.stats.get_value("item_successful_count", default=0)
@@ -44,5 +45,3 @@ class LogInterval:
                 f"Got {last_item_count} items (at {item_rate} items/{self.interval}{self.unit})"
             )
             await asyncio.sleep(self.seconds)
-
-

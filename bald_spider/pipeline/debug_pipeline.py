@@ -15,5 +15,5 @@ class DebugPipeline:
         logger = get_logger(cls.__name__, crawler.settings.get("LOG_LEVEL"))
         return cls(logger)
 
-    def process_item(self, item: Item, spider: Spider) -> None:
+    def process_item(self, item: Item, _spider: Spider) -> None:
         self.logger.debug(pformat(item.to_dict()))

@@ -34,6 +34,7 @@ _retry_exceptions = [
     ClientConnectorError
 ]
 
+
 class Retry:
 
     def __init__(
@@ -85,7 +86,6 @@ class Retry:
             return self._retry(request, type(exc).__name__, spider)
 
     def _retry(self, request: Request, reason, spider):
-        # todo 重新发起的请求，优先级应该怎么定
         retry_times = request.meta.get("retry_times", 0)
         if retry_times < self.max_retry_times:
             retry_times += 1

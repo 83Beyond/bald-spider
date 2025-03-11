@@ -7,5 +7,5 @@ class Pipeline:
         raise NotImplementedError
 
     @classmethod
-    def create_instance(cls, crawler):
+    def create_instance(cls, _crawler):
         return cls()

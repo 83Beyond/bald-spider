@@ -16,7 +16,7 @@ class ResponseFilter:
         )
         return o
 
-    def process_response(self, request, response, spider):
+    def process_response(self, _request, response, _spider):
         if 200 <= response.status < 300:
             return response
         if response.status in self.allowed_codes:

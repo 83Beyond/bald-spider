@@ -6,6 +6,7 @@ from w3lib.url import canonicalize_url
 
 from bald_spider import Request
 
+
 def to_bytes(text, encoding="utf-8") -> bytes:
     if isinstance(text, bytes):
         return text
@@ -14,6 +15,7 @@ def to_bytes(text, encoding="utf-8") -> bytes:
     if isinstance(text, dict):
         return json.dumps(text, sort_keys=True).encode(encoding)
     raise TypeError(f"`text` must be str, bytes or dict, get {type(text)}.")
+
 
 def request_fingerprint(
         request: Request,
@@ -25,7 +27,7 @@ def request_fingerprint(
     fp = hashlib.md5()
     fp.update(to_bytes(request.method))
     fp.update(to_bytes(canonicalize_url(request.url)))
-    fp.update(to_bytes(request.body) or b"")
+    # fp.update(to_bytes(request.body) or b"")
     if headers:
         for h in headers:
             if h in request.headers:

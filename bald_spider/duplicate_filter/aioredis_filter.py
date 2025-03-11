@@ -27,7 +27,7 @@ class AioRedisFilter(BaseFilter):
 
     @classmethod
     def create_instance(cls, crawler):
-        redis_url = crawler.settings.get("REDIS_URL")
+        redis_url = crawler.settings.get("REDIS_URL")  # noqa
         decode_responses = crawler.settings.getbool("DECODE_RESPONSES")
         redis_client = aioredis.from_url(redis_url, decode_responses=decode_responses)
         o = cls(

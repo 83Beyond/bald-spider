@@ -23,4 +23,5 @@ class LoggerManager:
             return _logger
         return cls.logger.get(key, None) or gen_logger()
 
+
 get_logger = LoggerManager.get_logger

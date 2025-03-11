@@ -15,7 +15,7 @@ class HTTPXDownloader(DownloaderBase):
     def open(self):
         super().open()
         request_time = self.crawler.settings.getint("REQUEST_TIMEOUT")
-        self._timeout = httpx.Timeout(total=request_time)
+        self._timeout = httpx.Timeout(timeout=request_time)
 
     async def fetch(self, request) -> Optional[Response]:
         async with self._active(request):
@@ -25,7 +25,7 @@ class HTTPXDownloader(DownloaderBase):
     async def download(self, request) -> Optional[Response]:
         try:
             proxies = request.proxy
-            async with httpx.AsyncClient(timeout=self._timeout, proxies=proxies) as client:
+            async with httpx.AsyncClient(timeout=self._timeout, proxy=proxies) as client:
                 self.logger.debug(f"request downloading: {request.url}, method: {request.method}")
                 response = await client.request(
                     request.method, request.url, headers=request.headers, cookies=request.cookies, data=request.body

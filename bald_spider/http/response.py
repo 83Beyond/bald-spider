@@ -3,6 +3,7 @@ import ujson
 import re
 from parsel import Selector
 from urllib.parse import urljoin as _urljoin
+from lxml import etree
 
 from bald_spider import Request
 from bald_spider.exceptions import DecodeError
@@ -51,9 +52,13 @@ class Response:
                 )
         return self._text_cache
 
+    # def xpath(self, xpath_string):
+    #     if self._selector is None:
+    #         self._selector = Selector(self.text)
+    #     return self._selector.xpath(xpath_string)
     def xpath(self, xpath_string):
         if self._selector is None:
-            self._selector = Selector(self.text)
+            self._selector = etree.HTML(self.text)
         return self._selector.xpath(xpath_string)
 
     def json(self):
